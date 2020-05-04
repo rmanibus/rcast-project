@@ -12,32 +12,41 @@ import lombok.Setter;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import static fr.sciam.rcast.impl.Config.INVOCATION_PREFIX;
 import static fr.sciam.rcast.impl.Config.RESPONSE_PREFIX;
 
 @ApplicationScoped
-public class Emitter {
+public class Emitter implements EntryAddedListener<String, Response> {
 
     @Inject
     HazelcastInstance instance;
 
+    volatile Map<String, ResponseWrapper> pendingRequests = new HashMap<>();
+
     protected Object emit(Invocation invocation, String appName, long timeout) throws Throwable {
-        String uuid = UUID.randomUUID().toString();
-        ResponseWrapper lock = new ResponseWrapper();
-        getResponseMap(appName).addEntryListener(new ResponseEntryListener(lock), uuid, true);
-        getInvocationMap(appName).put(uuid, invocation);
-        synchronized (lock) {
-            lock.wait(timeout);
+        ResponseWrapper wrapper = new ResponseWrapper();
+        String requestId = UUID.randomUUID().toString();
+        pendingRequests.put(requestId, wrapper);
+        IMap<String, Response> responseIMap = getResponseMap(appName);
+        UUID listenerId = responseIMap.addEntryListener(this, requestId, true);
+        getInvocationMap(appName).put(requestId, invocation);
+        synchronized (wrapper) {
+            wrapper.wait(timeout);
         }
-        if(lock.getResponse() == null){
+        responseIMap.removeEntryListener(listenerId);
+        pendingRequests.remove(requestId);
+        if (wrapper.getResponse() == null) {
             throw new RcastException("Request timeout");
         }
-        if(lock.getResponse().getException() != null){
-            throw lock.getResponse().getException();
+        responseIMap.remove(requestId);
+        if (wrapper.getResponse().getException() != null) {
+            throw wrapper.getResponse().getException();
         }
-        return lock.getResponse().getResult();
+        return wrapper.getResponse().getResult();
     }
 
     private IMap<String, Invocation> getInvocationMap(String appName) {
@@ -51,23 +60,20 @@ public class Emitter {
     @Getter
     @Setter
     static
-    class ResponseWrapper{
+    class ResponseWrapper {
         volatile Response response = null;
     }
 
-    static class ResponseEntryListener implements EntryAddedListener<String, Response> {
-        final ResponseWrapper lock;
 
-        protected ResponseEntryListener(ResponseWrapper lock) {
-            this.lock = lock;
-        }
+    @Override
+    public void entryAdded(EntryEvent<String, Response> entryEvent) {
+        ResponseWrapper wrapper = pendingRequests.get(entryEvent.getKey());
+        if(wrapper == null)
+            return; // too late
 
-        @Override
-        public void entryAdded(EntryEvent<String, Response> entryEvent) {
-            synchronized (lock) {
-                lock.setResponse(entryEvent.getValue());
-                lock.notify();
-            }
+        synchronized (wrapper) {
+            wrapper.setResponse(entryEvent.getValue());
+            wrapper.notify();
         }
     }
 
