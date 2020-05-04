@@ -1,4 +1,4 @@
-package fr.sciam.rcast.impl.instance;
+package fr.sciam.rcast.hazelcast;
 
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;

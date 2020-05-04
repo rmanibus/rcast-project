@@ -10,6 +10,7 @@
     <version>1.0-SNAPSHOT</version>
     <modules>
         <module>rcast</module>
+        <module>rcast-hazelcast</module>
         <module>rcast-impl</module>
         <module>rcast-ext</module>
     </modules>
@@ -35,6 +36,12 @@
             <dependency>
                 <groupId>fr.sciam</groupId>
                 <artifactId>rcast</artifactId>
+                <version>${project.version}</version>
+                <scope>compile</scope>
+            </dependency>
+            <dependency>
+                <groupId>fr.sciam</groupId>
+                <artifactId>rcast-hazelcast</artifactId>
                 <version>${project.version}</version>
                 <scope>compile</scope>
             </dependency>
@@ -68,11 +75,6 @@
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>fr.sciam</groupId>
-            <artifactId>rcast-ext</artifactId>
-            <version>1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
 </project>

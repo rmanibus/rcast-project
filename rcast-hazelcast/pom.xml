@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>rcast-impl</artifactId>
+    <artifactId>rcast-hazelcast</artifactId>
 
     <dependencies>
         <dependency>
@@ -17,12 +17,8 @@
             <artifactId>quarkus-resteasy</artifactId>
         </dependency>
         <dependency>
-            <groupId>fr.sciam</groupId>
-            <artifactId>rcast</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>fr.sciam</groupId>
-            <artifactId>rcast-hazelcast</artifactId>
+            <groupId>com.hazelcast</groupId>
+            <artifactId>hazelcast</artifactId>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -56,4 +52,5 @@
             </plugin>
         </plugins>
     </build>
+
 </project>
