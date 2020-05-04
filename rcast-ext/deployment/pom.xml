@@ -18,6 +18,10 @@
             <artifactId>quarkus-core-deployment</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-arc-deployment</artifactId>
+        </dependency>
+        <dependency>
             <groupId>fr.sciam</groupId>
             <artifactId>rcast-ext</artifactId>
             <version>${project.version}</version>
@@ -25,6 +29,21 @@
         <dependency>
             <groupId>fr.sciam</groupId>
             <artifactId>rcast</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.sciam</groupId>
+            <artifactId>rcast-impl</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-junit5</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

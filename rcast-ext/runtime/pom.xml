@@ -14,6 +14,14 @@
     <name>Rcast Extension - Runtime</name>
 
     <dependencies>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-arc-deployment</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.sciam</groupId>
+            <artifactId>rcast</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

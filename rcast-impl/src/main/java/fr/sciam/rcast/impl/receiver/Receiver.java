@@ -17,7 +17,7 @@ import static fr.sciam.rcast.impl.Config.INVOCATION_PREFIX;
 import static fr.sciam.rcast.impl.Config.RESPONSE_PREFIX;
 
 @ApplicationScoped
-public class Receiver {
+public class Receiver implements EntryAddedListener<String, Invocation> {
     @Inject
     HazelcastInstance instance;
 
@@ -25,28 +25,20 @@ public class Receiver {
     Invocator invocator;
 
     IMap<String, Response> responseIMap;
-
+    IMap<String, Invocation> invocationIMap;
     @PostConstruct
     protected void setup() {
         responseIMap = instance.getMap(RESPONSE_PREFIX + instance.getConfig().getInstanceName());
-        IMap<String, Invocation> invocationIMap = instance.getMap(INVOCATION_PREFIX + instance.getConfig().getInstanceName());
-        invocationIMap.addEntryListener(new InvocationEntryListener(responseIMap, invocator), true);
+        invocationIMap = instance.getMap(INVOCATION_PREFIX + instance.getConfig().getInstanceName());
+        invocationIMap.addEntryListener(this, true);
 
     }
 
-    static class InvocationEntryListener implements EntryAddedListener<String, Invocation> {
-        IMap<String, Response> responseIMap;
-        Invocator invocator;
 
-        protected InvocationEntryListener(IMap<String, Response> responseIMap, Invocator invocator) {
-            this.responseIMap = responseIMap;
-            this.invocator = invocator;
-        }
-
-        @Override
-        public void entryAdded(EntryEvent<String, Invocation> event) {
-            responseIMap.put(event.getKey(), invocator.invoke(event.getValue()));
-        }
+    @Override
+    public void entryAdded(EntryEvent<String, Invocation> event) {
+        invocationIMap.remove(event.getKey());
+        responseIMap.put(event.getKey(), invocator.invoke(event.getValue()));
     }
 
     void onStart(@Observes StartupEvent ev) {
