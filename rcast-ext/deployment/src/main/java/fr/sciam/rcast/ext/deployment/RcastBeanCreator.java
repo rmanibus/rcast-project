@@ -6,6 +6,7 @@ import io.quarkus.arc.BeanCreator;
 
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.Bean;
+import javax.enterprise.inject.spi.BeanManager;
 import java.util.Map;
 import java.util.Set;
 
@@ -25,15 +26,16 @@ public class RcastBeanCreator implements BeanCreator<Object> {
             log.error("cannot find class " + param.get("clazz"));
         }
         String appName = (String) param.get("appName");
-        Set<Bean<?>> beans = Arc.container().beanManager().getBeans(RcastProvider.class);
-        for(Bean<?> bean : beans){
-            log.info("Provider: " + bean.getName() + " " + bean.getBeanClass().getName());
-        }
-        RcastProvider provider = Arc.container().instance(RcastProvider.class).get();
-        if(provider == null){
+        BeanManager manager = Arc.container().beanManager();
+        Bean<?> bean = manager.resolve(manager.getBeans(RcastProvider.class));
+
+        if(bean == null){
             log.error("Cannot find any remote provider implementation");
             return null;
         }
+
+        RcastProvider provider = (RcastProvider) manager.getReference(bean, bean.getBeanClass(), manager.createCreationalContext(bean));
+
         return provider.getInstance(clazz, appName);
     }
 }

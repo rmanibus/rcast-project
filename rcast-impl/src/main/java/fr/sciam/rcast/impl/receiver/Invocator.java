@@ -5,6 +5,7 @@ import fr.sciam.rcast.impl.payload.Invocation;
 import fr.sciam.rcast.impl.payload.Response;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Default;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.inject.Inject;
@@ -25,12 +26,11 @@ public class Invocator {
         }catch (RcastException e){
             return new Response(null, e);
         }
-
     }
 
     private Object getInstance(String className){
         try {
-            Bean<?> bean = manager.resolve(manager.getBeans(Class.forName(className)));
+            Bean<?> bean = manager.resolve(manager.getBeans(Class.forName(className), Default.Literal.INSTANCE));
             if (bean == null){
                 throw new RcastException("no bean found for " + className);
             }

@@ -57,7 +57,7 @@ class RcastExtProcessor {
                         configurator.addType(rcastName);
                         configurator.addQualifier(RCAST);
                         final ScopeInfo scope = new ScopeInfo(DotName.createSimple(ApplicationScoped.class.getName()), true);
-                        //configurator.scope(scope);
+                        configurator.scope(scope);
                         configurator.param("clazz", rcastName.toString());
                         configurator.param("appName", getAnnotationParameter(entry.getValue()));
                         configurator.creator(RcastBeanCreator.class);

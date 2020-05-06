@@ -1,6 +1,7 @@
 package fr.sciam.rcast.impl.emitter;
 
 import fr.sciam.rcast.RcastProvider;
+import io.quarkus.arc.Unremovable;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -8,6 +9,7 @@ import java.lang.reflect.Proxy;
 
 import static fr.sciam.rcast.impl.Config.DEFAULT_TIMEOUT;
 
+@Unremovable
 @ApplicationScoped
 public class HzcRcastProvider implements RcastProvider {
 

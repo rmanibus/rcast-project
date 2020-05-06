@@ -6,6 +6,7 @@ import com.hazelcast.map.IMap;
 import com.hazelcast.map.listener.EntryAddedListener;
 import fr.sciam.rcast.impl.payload.Invocation;
 import fr.sciam.rcast.impl.payload.Response;
+import io.quarkus.arc.Unremovable;
 import io.quarkus.runtime.StartupEvent;
 
 import javax.annotation.PostConstruct;
@@ -16,6 +17,7 @@ import javax.inject.Inject;
 import static fr.sciam.rcast.impl.Config.INVOCATION_PREFIX;
 import static fr.sciam.rcast.impl.Config.RESPONSE_PREFIX;
 
+@Unremovable
 @ApplicationScoped
 public class Receiver implements EntryAddedListener<String, Invocation> {
     @Inject
@@ -33,7 +35,6 @@ public class Receiver implements EntryAddedListener<String, Invocation> {
         invocationIMap.addEntryListener(this, true);
 
     }
-
 
     @Override
     public void entryAdded(EntryEvent<String, Invocation> event) {
