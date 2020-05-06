@@ -15,6 +15,7 @@ import javax.inject.Inject;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static fr.sciam.rcast.impl.Config.INVOCATION_PREFIX;
 import static fr.sciam.rcast.impl.Config.RESPONSE_PREFIX;
@@ -25,21 +26,29 @@ public class Emitter implements EntryAddedListener<String, Response> {
     @Inject
     HazelcastInstance instance;
 
-    volatile Map<String, ResponseWrapper> pendingRequests = new HashMap<>();
+    Map<String, ResponseWrapper> pendingRequests = new ConcurrentHashMap<>();
 
     protected Object emit(Invocation invocation, String appName, long timeout) throws Throwable {
+        IMap<String, Response> responseIMap = getResponseMap(appName);
+        IMap<String, Invocation> invocationIMap = getInvocationMap(appName);
         ResponseWrapper wrapper = new ResponseWrapper();
         String requestId = UUID.randomUUID().toString();
-        pendingRequests.put(requestId, wrapper);
-        IMap<String, Response> responseIMap = getResponseMap(appName);
+
         UUID listenerId = responseIMap.addEntryListener(this, requestId, true);
-        getInvocationMap(appName).put(requestId, invocation);
-        synchronized (wrapper) {
-            wrapper.wait(timeout);
+        try{
+            pendingRequests.put(requestId, wrapper);
+            invocationIMap.put(requestId, invocation);
+            synchronized (wrapper) {
+                wrapper.wait(timeout);
+            }
+
+        }finally {
+            responseIMap.removeEntryListener(listenerId);
+            pendingRequests.remove(requestId);
         }
-        responseIMap.removeEntryListener(listenerId);
-        pendingRequests.remove(requestId);
+
         if (wrapper.getResponse() == null) {
+            invocationIMap.remove(requestId);
             throw new RcastException("Request timeout");
         }
         responseIMap.remove(requestId);
@@ -61,7 +70,7 @@ public class Emitter implements EntryAddedListener<String, Response> {
     @Setter
     static
     class ResponseWrapper {
-        volatile Response response = null;
+        Response response = null;
     }
 
 
