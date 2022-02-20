@@ -33,7 +33,6 @@ public class Emitter implements EntryAddedListener<String, Response> {
         IMap<String, Invocation> invocationIMap = getInvocationMap(appName);
         ResponseWrapper wrapper = new ResponseWrapper();
         String requestId = UUID.randomUUID().toString();
-
         UUID listenerId = responseIMap.addEntryListener(this, requestId, true);
         try{
             pendingRequests.put(requestId, wrapper);

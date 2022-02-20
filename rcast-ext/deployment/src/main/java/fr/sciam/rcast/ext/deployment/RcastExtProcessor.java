@@ -33,14 +33,10 @@ class RcastExtProcessor {
     }
 
     @BuildStep
-    @Record(ExecutionTime.STATIC_INIT)
     private void processInterfaces(
             CombinedIndexBuildItem indexBuildItem,
-            BuildProducer<BeanRegistrarBuildItem> beanRegistrar,
-            RcastRecorder recorder
+            BuildProducer<BeanRegistrarBuildItem> beanRegistrar
     ) {
-
-        recorder.dummy();
 
         Map<DotName, ClassInfo> interfaces = this.getInterfaces(indexBuildItem.getIndex());
 
