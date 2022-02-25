@@ -19,20 +19,19 @@
         <maven.compiler.target>14</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <quarkus.platform.artifact-id>quarkus-universe-bom</quarkus.platform.artifact-id>
-        <quarkus.platform.group-id>io.quarkus</quarkus.platform.group-id>
         <rcast.version>${project.version}</rcast.version>
         <compiler-plugin.version>3.8.1</compiler-plugin.version>
-        <quarkus.platform.version>1.4.1.Final</quarkus.platform.version>
-        <hazelcast.version>4.0</hazelcast.version>
+        <quarkus.version>2.7.1.Final</quarkus.version>
+        <hazelcast.version>4.2.4</hazelcast.version>
         <lombok.version>1.18.10</lombok.version>
+        <surefire-plugin.version>3.0.0-M5</surefire-plugin.version>
     </properties>
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>${quarkus.platform.group-id}</groupId>
-                <artifactId>${quarkus.platform.artifact-id}</artifactId>
-                <version>${quarkus.platform.version}</version>
+                <groupId>io.quarkus</groupId>
+                <artifactId>quarkus-bom</artifactId>
+                <version>${quarkus.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

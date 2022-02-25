@@ -2,22 +2,24 @@ package fr.sciam.rcast.ext.deployment;
 
 import fr.sciam.rcast.Rcast;
 import fr.sciam.rcast.RegisterRcast;
-import fr.sciam.rcast.ext.RcastRecorder;
-import io.quarkus.arc.deployment.BeanRegistrarBuildItem;
-import io.quarkus.arc.processor.BeanConfigurator;
+import io.quarkus.arc.deployment.SyntheticBeanBuildItem;
+import io.quarkus.arc.deployment.SyntheticBeanBuildItem.ExtendedBeanConfigurator;
 import io.quarkus.arc.processor.ScopeInfo;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
-import io.quarkus.deployment.annotations.ExecutionTime;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
-import org.jboss.jandex.*;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.AnnotationTarget;
+import org.jboss.jandex.AnnotationValue;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.DotName;
+import org.jboss.jandex.IndexView;
 import org.jboss.logging.Logger;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.util.HashMap;
 import java.util.Map;
-import io.quarkus.deployment.annotations.Record;
 
 class RcastExtProcessor {
 
@@ -35,7 +37,7 @@ class RcastExtProcessor {
     @BuildStep
     private void processInterfaces(
             CombinedIndexBuildItem indexBuildItem,
-            BuildProducer<BeanRegistrarBuildItem> beanRegistrar
+            BuildProducer<SyntheticBeanBuildItem> syntheticBeans
     ) {
 
         Map<DotName, ClassInfo> interfaces = this.getInterfaces(indexBuildItem.getIndex());
@@ -45,23 +47,21 @@ class RcastExtProcessor {
             log.info(interfaze.toString());
         }
 
-        beanRegistrar.produce(new BeanRegistrarBuildItem(
-                registrationContext -> {
-                    for (Map.Entry<DotName, ClassInfo> entry : interfaces.entrySet()) {
-                        DotName rcastName = entry.getKey();
-                        BeanConfigurator<Object> configurator = registrationContext.configure(rcastName);
-                        configurator.addType(rcastName);
-                        configurator.addQualifier(RCAST);
-                        final ScopeInfo scope = new ScopeInfo(DotName.createSimple(ApplicationScoped.class.getName()), true);
-                        configurator.scope(scope);
-                        configurator.param("clazz", rcastName.toString());
-                        configurator.param("appName", getAnnotationParameter(entry.getValue()));
-                        configurator.creator(RcastBeanCreator.class);
-                        configurator.done();
-                    }
-                }
-        ));
+        for (Map.Entry<DotName, ClassInfo> entry : interfaces.entrySet()) {
+            DotName rcastName = entry.getKey();
+            ExtendedBeanConfigurator configurator = SyntheticBeanBuildItem.configure(rcastName);
+            configurator.addType(rcastName);
+            configurator.addQualifier(RCAST);
+            final ScopeInfo scope = new ScopeInfo(DotName.createSimple(ApplicationScoped.class.getName()), true);
+            configurator.scope(scope);
+            configurator.param("clazz", rcastName.toString());
+            configurator.param("appName", getAnnotationParameter(entry.getValue()));
+            configurator.creator(RcastBeanCreator.class);
+            syntheticBeans.produce(configurator.done());
+
+        }
     }
+
 
     private String getAnnotationParameter(ClassInfo classInfo) {
         AnnotationInstance instance = classInfo.classAnnotation(REGISTER_RCAST);

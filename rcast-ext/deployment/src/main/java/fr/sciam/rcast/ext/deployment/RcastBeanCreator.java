@@ -3,14 +3,12 @@ package fr.sciam.rcast.ext.deployment;
 import fr.sciam.rcast.RcastProvider;
 import io.quarkus.arc.Arc;
 import io.quarkus.arc.BeanCreator;
+import org.jboss.logging.Logger;
 
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import java.util.Map;
-import java.util.Set;
-
-import org.jboss.logging.Logger;
 
 public class RcastBeanCreator implements BeanCreator<Object> {
 
@@ -29,7 +27,7 @@ public class RcastBeanCreator implements BeanCreator<Object> {
         BeanManager manager = Arc.container().beanManager();
         Bean<?> bean = manager.resolve(manager.getBeans(RcastProvider.class));
 
-        if(bean == null){
+        if (bean == null) {
             log.error("Cannot find any remote provider implementation");
             return null;
         }
